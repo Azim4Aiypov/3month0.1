@@ -1,0 +1,36 @@
+sudo apt update       # Обновить список пакетов
+sudo apt upgrade      # Обновить установленные программы
+
+sudo apt install python3  # Установить Python
+
+sudo apt install python3-venv  # Установить venv, если нет
+
+python3 -m venv venv  # Создать окружение
+
+source venv/bin/activate  # Активировать окружение
+
+deactivate  # Выйти из окружения
+
+
+Установка библиотеки flet
+pip install flet 
+
+
+Активация для windows
+venv\Scripts\activate
+
+
+deactivate 
+
+python3 -m venv .venv
+
+
+source .venv/bin/activate
+
+
+Уставнока полной библиотеки flet
+pip install flet[all]
+
+
+Уставновка доп библиотеки
+sudo apt install libmpv1
