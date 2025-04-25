@@ -1,88 +1,139 @@
 import flet as ft
 from datetime import datetime
+import random
 
 def main(page: ft.Page):
     page.title = "Моё первое приложение"
     page.theme_mode = ft.ThemeMode.LIGHT
-    
-    # Заголовок с приветствием
-    greeting_text = ft.Text("Привет, мир!")
+    greeting_text = ft.Text("Hello world!")
 
-    # История приветствий
+    HISTORY_FILE = "history.txt"
     greeting_history = []
+    history_visible = True
+    random_names = ["Алексей", "Мария", "Иван", "Ольга", "Наталья", "Дмитрий", "Светлана", "Егор", "Анна"]
 
-    history_text = ft.Text("История приветствий:", style='bodyMedium')
+    def load_history():
+        try:
+            with open(HISTORY_FILE, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+                for line in lines:
+                    name = line.strip()
+                    if name:
+                        greeting_history.append(name)
+                history_text.value = 'История приветствий:\n' + "\n".join(greeting_history)
+                page.update()
+        except FileNotFoundError:
+            pass
 
-    # Функция для формирования приветствия в зависимости от времени суток
-    def get_greeting(name):
-        # Получаем текущее время
-        current_hour = datetime.now().hour
+    def save_history():
+        with open(HISTORY_FILE, 'w', encoding='utf-8') as file:
+            for name in greeting_history:
+                file.write(name + "\n")
 
-        # Определяем время суток и формируем приветствие
-        if 6 <= current_hour < 12:
-            return f"Доброе утро, {name}!"
-        elif 12 <= current_hour < 18:
-            return f"Добрый день, {name}!"
-        elif 18 <= current_hour < 24:
-            return f"Добрый вечер, {name}!"
+    history_text = ft.Text("История приветствий:", size="bodyMedium")
+
+    def set_greeting_color():
+        hour = datetime.now().hour
+        if 6 <= hour < 12:
+            greeting_text.color = ft.colors.YELLOW
+        elif 12 <= hour < 18:
+            greeting_text.color = ft.colors.ORANGE
+        elif 18 <= hour < 24:
+            greeting_text.color = ft.colors.RED
         else:
-            return f"Доброй ночи, {name}!"
+            greeting_text.color = ft.colors.BLUE
 
-    # Обработчик нажатия кнопки "Поздороваться"
-    def on_button_click(e):
+    def on_button_click(_):
         name = name_input.value.strip()
-
         if name:
-            # Получаем соответствующее приветствие
-            greeting_text.value = get_greeting(name)
-            greet_button.text = 'Поздороваться снова'
-            name_input.value = ''
+            greeting_text.value = f"Привет, {name}!"
+            greet_button.text = "Поздороваться снова"
+            name_input.value = ""
 
-            # Добавляем в историю приветствие с временем
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            greeting_history.append(f"{timestamp}: {greeting_text.value}")
+            greeting_history.append(name)
             history_text.value = "История приветствий:\n" + "\n".join(greeting_history)
+            save_history()
+            set_greeting_color()
         else:
-            greeting_text.value = "Пожалуйста, введите ваше имя!"
+            greeting_text.value = 'Пожалуйста, введите имя ❌'
+            greeting_text.color = ft.colors.BLACK
 
         page.update()
 
-    # Поле для ввода имени
-    name_input = ft.TextField(label="Введите ваше имя:", autofocus=True, on_submit=on_button_click)
+    name_input = ft.TextField(
+        label="Введите имя",
+        autofocus=True,
+        on_submit=on_button_click
+    )
 
-    # Обработчик для очистки истории
-    def clear_history(e):
+    def clear_history(_):
         greeting_history.clear()
         history_text.value = "История приветствий:"
         page.update()
-    
-    # Обработчик для смены темы
-    def toggle_theme(e):
+
+    def toggle_theme(_):
         if page.theme_mode == ft.ThemeMode.LIGHT:
             page.theme_mode = ft.ThemeMode.DARK
         else:
             page.theme_mode = ft.ThemeMode.LIGHT
-
         page.update()
 
-    # Кнопки для смены темы и очистки истории
-    theme_button = ft.IconButton(icon=ft.icons.BRIGHTNESS_6, tooltip="Сменить тему", on_click=toggle_theme)
-    clear_button = ft.TextButton("Очистить историю", on_click=clear_history)
-    clear_button_icon = ft.IconButton(icon=ft.icons.DELETE, tooltip="Очистить", on_click=clear_history)
+    def insert_random_name(_):
+        name_input.value = random.choice(random_names)
+        page.update()
 
-    # Кнопка для приветствия
-    greet_button = ft.ElevatedButton("Поздороваться", on_click=on_button_click)
+    def toggle_history(_):
+        nonlocal history_visible
+        history_visible = not history_visible
+        history_text.visible = history_visible
+        toggle_history_button.text = "Скрыть историю" if history_visible else "Показать историю"
+        page.update()
 
-    # Добавляем все компоненты на страницу
+    theme_button = ft.IconButton(
+        icon=ft.icons.BRIGHTNESS_6,
+        tooltip='Сменить тему',
+        on_click=toggle_theme
+    )
+
+    greet_button = ft.ElevatedButton(
+        'Поздороваться',
+        on_click=on_button_click,
+        icon=ft.icons.HANDSHAKE
+    )
+
+    clear_button = ft.TextButton(
+        "Очистить историю",
+        icon=ft.icons.DELETE_SWEEP,
+        on_click=clear_history
+    )
+
+    clear_button_2 = ft.IconButton(
+        icon=ft.icons.DELETE,
+        tooltip='Очистить историю',
+        on_click=clear_history
+    )
+
+    random_name_button = ft.ElevatedButton(
+        "Случайное имя",
+        icon=ft.icons.SHUFFLE,
+        on_click=insert_random_name
+    )
+
+    toggle_history_button = ft.TextButton(
+        text="Скрыть историю",
+        icon=ft.icons.HISTORY,
+        on_click=toggle_history
+    )
+
+    load_history()
+
     page.add(
-        ft.Row([theme_button, clear_button, clear_button_icon], alignment=ft.MainAxisAlignment.CENTER), 
-        greeting_text, 
-        name_input, 
-        greet_button,
+        ft.Row([theme_button, clear_button, clear_button_2], alignment=ft.MainAxisAlignment.CENTER),
+        greeting_text,
+        name_input,
+        ft.Row([greet_button, random_name_button], alignment=ft.MainAxisAlignment.CENTER),
+        toggle_history_button,
         history_text
     )
 
-    
-    page.update()
-
-ft.app(target=main)
+ft.app(main)
