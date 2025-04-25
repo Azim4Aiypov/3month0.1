@@ -136,4 +136,4 @@ def main(page: ft.Page):
         history_text
     )
 
-ft.app(main)
+ft.app(main)          
